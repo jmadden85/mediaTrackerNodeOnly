@@ -2,8 +2,6 @@ var mongoose = require('mongoose');
 var http = require('http');
 var qs = require('querystring');
 var Schema = mongoose.Schema;
-
-
 /*******
  * Media Schema
  *******/
@@ -26,18 +24,35 @@ var MediaSchema = new Schema({
         unique: true
     }
 });
-
+/*******
+ * Connect to mongo database
+ *******/
 mongoose.connect('mongodb://localhost/media');
-
+/*******
+ * Set the Schema to create the collection
+ *******/
 var Media = mongoose.model('Media', MediaSchema);
-
-
-
+/*******
+ * Create server
+ *******/
 var server = http.createServer(function(req, res) {
+    /*******
+     * Listen for posts to /media
+     *******/
     if (req.method === 'POST' && req.url.substr(0, 6) === '/media') {
+        /*******
+         * Parse querystring to object
+         *******/
         var query = qs.parse(req.url.substr(7));
+        /*******
+         * Create unique ID for quick db search
+         *******/
         var uniqueId = query.uid + query.nid;
         var media = new Media(req.body);
+        /*******
+         * Search for existing record by unique ID and update it
+         * Upsert set to true so if no record is found it is created
+         *******/
         Media.findOneAndUpdate({identifier: uniqueId},
             {
                 nid:query.nid,
@@ -55,4 +70,6 @@ var server = http.createServer(function(req, res) {
     res.writeHead(200);
     res.end();
 });
+
 server.listen(3000);
+console.log('Server listening on port 3000');
