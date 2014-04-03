@@ -62,9 +62,7 @@ var server = http.createServer(function(req, res) {
             },
             {upsert: true},
             function (err) {
-            if (err) {
-                return err;
-            }
+                if (err) return err;
         });
     }
     res.writeHead(200);
