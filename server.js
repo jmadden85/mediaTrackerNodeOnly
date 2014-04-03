@@ -46,15 +46,13 @@ var server = http.createServer(function(req, res) {
                 time:query.time
             },
             {upsert: true},
-            function (err, data) {
+            function (err) {
             if (err) {
                 return err;
-            } else {
-                console.log(data);
             }
         });
     }
     res.writeHead(200);
-    res.end('0');
+    res.end();
 });
 server.listen(3000);
