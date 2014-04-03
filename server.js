@@ -64,9 +64,19 @@ var server = http.createServer(function(req, res) {
             function (err) {
                 if (err) return err;
         });
+        res.writeHead(200);
+        res.end();
+    } else if (req.method === 'GET' && req.url === '/media') {
+        Media.find().lean().exec(function (err, docs) {
+            if (err) {
+                return err;
+            } else {
+                res.setHeader('Content-Type', 'application/json');
+                res.writeHead(200);
+                res.end(JSON.stringify(docs));
+            }
+        });
     }
-    res.writeHead(200);
-    res.end();
 });
 
 server.listen(3000);
