@@ -66,7 +66,7 @@ var server = http.createServer(function(req, res) {
         });
         res.writeHead(200);
         res.end();
-    } else if (req.method === 'GET' && req.url === '/media') {
+    } else if (req.method === 'GET' && req.url.substr(0, 6) === '/media') {
         Media.find().lean().exec(function (err, docs) {
             if (err) {
                 return err;
@@ -74,6 +74,15 @@ var server = http.createServer(function(req, res) {
                 res.setHeader('Content-Type', 'application/json');
                 res.writeHead(200);
                 res.end(JSON.stringify(docs));
+                if (req.url.substr(7) === 'drop') {
+                    Media.remove({}, function (err) {
+                        if (err) {
+                            return err;
+                        }
+                        console.log('Media Dropped');
+
+                    });
+                }
             }
         });
     }
