@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var http = require('http');
-var qs = require('querystring');
+var url = require('url');
+//var qs = require('querystring');
 var Schema = mongoose.Schema;
 /*******
  * Media Schema
@@ -39,15 +40,12 @@ var server = http.createServer(function(req, res) {
     /*******
      * Listen for posts to /media
      *******/
-    if (req.method === 'POST' && req.url.substr(0, 6) === '/media') {
-        /*******
-         * Parse querystring to object
-         *******/
-        var query = qs.parse(req.url.substr(7));
+    var newReq = url.parse(req.url, true);
+    if (req.method === 'POST' && newReq.pathname === '/media') {
         /*******
          * Create unique ID for quick db search
          *******/
-        var uniqueId = query.uid + query.nid;
+        var uniqueId = newReq.query.uid + newReq.query.nid;
         var media = new Media(req.body);
         /*******
          * Search for existing record by unique ID and update it
@@ -55,10 +53,10 @@ var server = http.createServer(function(req, res) {
          *******/
         Media.findOneAndUpdate({identifier: uniqueId},
             {
-                nid:query.nid,
-                uid:query.uid,
+                nid:newReq.query.nid,
+                uid:newReq.query.uid,
                 identifier: uniqueId,
-                time:query.time
+                time:newReq.query.time
             },
             {upsert: true},
             function (err) {
@@ -66,7 +64,7 @@ var server = http.createServer(function(req, res) {
         });
         res.writeHead(200);
         res.end();
-    } else if (req.method === 'GET' && req.url.substr(0, 6) === '/media') {
+    } else if (req.method === 'GET' && newReq.pathname === '/media') {
         Media.find().lean().exec(function (err, docs) {
             if (err) {
                 return err;
@@ -74,7 +72,7 @@ var server = http.createServer(function(req, res) {
                 res.setHeader('Content-Type', 'application/json');
                 res.writeHead(200);
                 res.end(JSON.stringify(docs));
-                if (req.url.substr(7) === 'drop') {
+                if (newReq.search === '?drop') {
                     Media.remove({}, function (err) {
                         if (err) {
                             return err;
